@@ -1,0 +1,7 @@
+main: dev.blue.wizards.Main
+name: Wizards
+version: 0.1
+api-version: 1.13
+depend: [Brawl]
+commands:
+  addspell:
