@@ -8,6 +8,8 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -16,16 +18,22 @@ import dev.blue.wizards.Main;
 public class EnergySpell extends Spell {
 	
 	public EnergySpell(Main main, Player caster) {
-		super(main, caster, new NamespacedKey(main, "wizards-energySpell"));
+		super(main, caster, new NamespacedKey(main, "wizards-energySpell"), 7);
 	}
 	
 	@Override
 	public void cast() {
-		if(p.getFoodLevel() < 7) {
+		for(PotionEffect each:p.getActivePotionEffects()) {
+			if(each.getType() == PotionEffectType.INVISIBILITY) {
+				p.removePotionEffect(PotionEffectType.INVISIBILITY);
+				p.removePotionEffect(PotionEffectType.NIGHT_VISION);
+			}
+		}
+		if(p.getFoodLevel() < cost) {
 			p.playSound(p.getLocation(), Sound.BLOCK_DISPENSER_FAIL, 1, 1);
 			return;
 		}
-		p.setFoodLevel(p.getFoodLevel()-7);
+		p.setFoodLevel(p.getFoodLevel()-cost);
 		if(main.getGame().gameIsRunning()) {
 			launchEnergy(p);
 			p.getWorld().playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.7f, 0.1f);

@@ -1,12 +1,10 @@
 package dev.blue.wizards.listeners;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Banner;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.AreaEffectCloud;
@@ -14,6 +12,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -35,34 +34,29 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import dev.blue.wizards.Main;
 import dev.blue.wizards.spells.EnergySpell;
 import dev.blue.wizards.spells.FireballSpell;
 import dev.blue.wizards.spells.GustSpell;
 import dev.blue.wizards.spells.HealSpell;
+import dev.blue.wizards.spells.HideSpell;
 import dev.blue.wizards.spells.LeapSpell;
+import dev.blue.wizards.spells.LevitateSpell;
 import dev.blue.wizards.spells.LightningSpell;
-import dev.blue.wizards.wands.EnergyWand;
-import dev.blue.wizards.wands.FireballWand;
-import dev.blue.wizards.wands.GustWand;
-import dev.blue.wizards.wands.HealWand;
-import dev.blue.wizards.wands.LeapWand;
-import dev.blue.wizards.wands.LightningWand;
+import dev.blue.wizards.spells.Spell;
 
 public class BannerListener implements Listener {
 	private Main main;
-	private List<Player> clickCooldown;
 	public BannerListener(Main main) {
 		this.main = main;
-		clickCooldown = new ArrayList<Player>();
 	}
 	@EventHandler
 	public void onCollect(PlayerMoveEvent e) {
-		if(e.getPlayer().getGameMode() != GameMode.SURVIVAL) {
+		if(e.getPlayer().getGameMode() != main.playMode) {
 			return;
 		}
 		if(e.getFrom().getBlock().equals(e.getTo().getBlock())) {
@@ -161,11 +155,24 @@ public class BannerListener implements Listener {
 		}
 		if(damager instanceof AreaEffectCloud) {
 			AreaEffectCloud cloud = (AreaEffectCloud) damager;
-			if(cloud.getBasePotionData().equals(new PotionData(PotionType.INSTANT_DAMAGE, false, false))) {
-				damaged.setFireTicks(damaged.getFireTicks()+(new FireballSpell(main, (Player)cloud.getSource()).getLevel())*40);
+			if(cloud.getBasePotionType().equals(PotionType.HARMING)) {
+				damaged.setFireTicks(damaged.getFireTicks()+(new FireballSpell(main, (Player)cloud.getSource()).getLevel())*20);
+			}
+		}
+		if(damager instanceof ShulkerBullet) {
+			ShulkerBullet tooth = (ShulkerBullet) damager;
+			if(tooth.getPersistentDataContainer().has(new LevitateSpell(main, null).getKey(), PersistentDataType.BYTE)) {
+				if(damaged instanceof Player) {
+					Player dmgd = (Player) damaged;
+					double level = new LevitateSpell(main, (Player)tooth.getShooter()).getLevel();
+					dmgd.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 30+(int)(5*level), 1+(int)(level/10)));
+					dmgd.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 30+(int)(5*level), 2+(int)(level/5)));
+					dmgd.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 40+(int)(5*level), 1+(int)(level/5)));
+				}
 			}
 		}
 	}
+	
 	@EventHandler
 	public void onInventory(InventoryClickEvent e) {
 		if(e.getCurrentItem() == null) {
@@ -195,51 +202,56 @@ public class BannerListener implements Listener {
 	public void onClick(PlayerInteractEvent e) {
 		e.setCancelled(true);
 		Player p = e.getPlayer();
-		p.swingMainHand();
-		if(p.getGameMode() != GameMode.ADVENTURE && e.getPlayer().getGameMode() != GameMode.SURVIVAL) {
+		
+		if(p.getGameMode() != main.playMode) {
 			return;
 		}
 		if(e.getHand() != EquipmentSlot.HAND) {
 			return;
 		}
-		if(e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+		if(e.getAction() != Action.LEFT_CLICK_AIR && e.getAction() != Action.LEFT_CLICK_BLOCK) {
 			return;
 		}
-		if(clickCooldown.contains(e.getPlayer())) {
-			return;
-		}
-		clickCooldown.add(p);
 		ItemStack hand = p.getInventory().getItemInMainHand();
 		if(hand == null || hand.getType() == Material.AIR) {
 			return;
 		}
-		if(hand.isSimilar(new EnergyWand(main).getItemStack())) {
-			new EnergySpell(main, p).cast();
-		}else if(hand.isSimilar(new GustWand(main).getItemStack())) {
-			new GustSpell(main, p).cast();
-		}else if(hand.isSimilar(new LightningWand(main).getItemStack())) {
-			new LightningSpell(main, p).cast();
-		}else if(hand.isSimilar(new FireballWand(main).getItemStack())) {
-			new FireballSpell(main, p).cast();
-		}else if(hand.isSimilar(new HealWand(main).getItemStack())) {
-			new HealSpell(main, p).cast();
-		}else if(hand.isSimilar(new LeapWand(main).getItemStack())) {
-			new LeapSpell(main, p).cast();
+		getSpellByWand(hand, p).cast();
+	}
+	
+	private Spell getSpellByWand(ItemStack stack, Player holder) {
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-energySpell"))){
+			return new EnergySpell(main, holder);
 		}
-		BukkitRunnable cooldown = new BukkitRunnable() {
-			@Override
-			public void run() {
-				clickCooldown.remove(p);
-			}
-		};
-		cooldown.runTaskLater(main, 1);
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-healSpell"))){
+			return new HealSpell(main, holder);
+		}
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-lightningSpell"))){
+			return new LightningSpell(main, holder);
+		}
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-leapSpell"))){
+			return new LeapSpell(main, holder);
+		}
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-gustSpell"))){
+			return new GustSpell(main, holder);
+		}
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-fireballSpell"))){
+			return new FireballSpell(main, holder);
+		}
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-levitateSpell"))){
+			return new LevitateSpell(main, holder);
+		}
+		if(stack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(main, "wizards-hideSpell"))){
+			return new HideSpell(main, holder);
+		}
+		return null;
 	}
 	
 	@EventHandler
 	public void onCloseClick(PlayerInteractAtEntityEvent e) {
 		Player p = e.getPlayer();
 		e.setCancelled(true);
-		Bukkit.getPluginManager().callEvent(new PlayerInteractEvent(p, Action.RIGHT_CLICK_AIR , null, null, null, EquipmentSlot.HAND));
+		Bukkit.getPluginManager().callEvent(new PlayerInteractEvent(p, Action.RIGHT_CLICK_AIR , p.getInventory().getItemInMainHand(), null, null, EquipmentSlot.HAND));
 	}
 	
 	@EventHandler

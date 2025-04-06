@@ -17,26 +17,11 @@ import dev.blue.brawl.events.PlayerCombatEvent;
 import dev.blue.brawl.events.PlayerEliminateEvent;
 import dev.blue.wizards.Main;
 import dev.blue.wizards.spells.GustSpell;
+import dev.blue.wizards.spells.LevitateSpell;
 
 public class GameListener implements Listener {
 	
 	private Main main;
-	
-	String[] selfShockMessages = {
-		"§d#name# is conducting themselves well", "§d#name# made a shocking discovery", "§d#name# decided to start lightening up"
-	};
-	
-	String[] selfBurnMessages = {
-		"§d#name#'s looking mighty crispy", "§d#name#'s death warrants a study in Spontaneous Human Combustion", "§d#name# is all fired up and ready to go!"
-	};
-	
-	String[] suicideMessages = {
-		"§d#name# couldn't take it anymore", "§d#name# was their own worst enemy", "§d#name# found no reason to continue", "§d#name#().setCancelled(true);"
-	};
-	
-	String[] unusualDeathMessages = {
-		"§dUnusual circumstances befell #name#", "§d...yeah, #name# does that sometimes", "§dLooks like #name# learned a new trick"
-	};
 	
 	public GameListener(Main main) {
 		this.main = main;
@@ -44,19 +29,12 @@ public class GameListener implements Listener {
 	
 	@EventHandler
 	public void onEliminate(PlayerEliminateEvent e) {
-		String cause = e.getReason().split("#")[0];
-		boolean voidDmg = e.getReason().split("#").length > 1;
+		String cause = e.getReason().split("%")[0];
+		boolean voidDmg = e.getReason().split("%").length > 1;
 		if(e.getKiller() != null) {
 			Entity entity = Bukkit.getEntity(e.getKiller());
 			if(Bukkit.getEntity(e.getKiller()) instanceof Player) {
 				Player killer = (Player) entity;
-				if(killer.equals(e.getPlayer())) {
-					if(cause.equalsIgnoreCase("lightning")) {
-						e.setDeathMessage(main.getMessages().getSelfShockMessage(e.getPlayer()));
-					}else if(cause.equalsIgnoreCase("fire")) {
-						e.setDeathMessage(main.getMessages().getSelfBurnMessage(e.getPlayer()));
-					}else e.setDeathMessage(main.getMessages().getSuicideMessage(e.getPlayer()));
-				}else{
 					if(cause.equalsIgnoreCase("lightning")) {
 						e.setDeathMessage("§d"+e.getPlayer().getDisplayName()+" was struck down by "+killer.getDisplayName());
 					}else if(cause.equalsIgnoreCase("fire")) {
@@ -65,15 +43,22 @@ public class GameListener implements Listener {
 						e.setDeathMessage("§d"+killer.getDisplayName()+" has cast "+e.getPlayer().getDisplayName()+" into the abyss!");
 					}else if(cause.equalsIgnoreCase("energy") && !voidDmg) {
 						e.setDeathMessage("§d"+killer.getDisplayName()+" wouldn't stop poking "+e.getPlayer().getDisplayName());
-					}else if(cause.equalsIgnoreCase("energy") && voidDmg) {
+					}else if(cause.equalsIgnoreCase("levitate") && !voidDmg) {
+						e.setDeathMessage("§d"+killer.getDisplayName()+"'s 'Wingardium Leviosa' was effective against "+e.getPlayer().getDisplayName());
+					}else if(cause.equalsIgnoreCase("void") && voidDmg) {
 						e.setDeathMessage("§d"+e.getPlayer().getDisplayName()+" dove off the edge to escape "+killer.getDisplayName());
 					}else{
 						e.setDeathMessage("§d"+killer.getDisplayName()+" killed "+e.getPlayer().getDisplayName());
 					}
 				}
-			}
 		}else {
-			e.setDeathMessage(main.getMessages().getUnusualDeathMessage(e.getPlayer()));
+			if(cause.equalsIgnoreCase("lightning")) {
+				e.setDeathMessage(main.getMessages().getSelfShockMessage(e.getPlayer()));
+			}else if(cause.equalsIgnoreCase("fire")) {
+				e.setDeathMessage(main.getMessages().getSelfBurnMessage(e.getPlayer()));
+			}else if(cause.equalsIgnoreCase("void")) {
+				e.setDeathMessage(main.getMessages().getSuicideMessage(e.getPlayer()));
+			}else e.setDeathMessage(main.getMessages().getUnusualDeathMessage(e.getPlayer().getDisplayName()));
 		}
 		BukkitRunnable setPots = new BukkitRunnable() {
 			@Override
@@ -99,6 +84,8 @@ public class GameListener implements Listener {
 					e.setAttacker((Entity)proj.getShooter());
 					if(GustSpell.isGust(proj)) {
 						e.setCause("wind");
+					}else if(LevitateSpell.isLevitate(proj)) {
+						e.setCause("levitate");
 					}else {
 						e.setCause("energy");
 					}

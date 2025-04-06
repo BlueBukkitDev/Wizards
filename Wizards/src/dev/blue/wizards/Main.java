@@ -1,6 +1,7 @@
 package dev.blue.wizards;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import dev.blue.brawl.BrawlPlugin;
@@ -15,9 +16,12 @@ public class Main extends JavaPlugin {
 	private BaseGame game;
 	private BrawlPlugin brawl;
 	private Messages messages;
+	public GameMode playMode;
 	
 	@Override
 	public void onEnable() {
+		saveDefaultConfig();
+		playMode = GameMode.valueOf(getConfig().getString("GameMode").toUpperCase());
 		utils = new Utils(this);
 		gameEvents = new GameEvents(this);
 		brawl = (BrawlPlugin) Bukkit.getPluginManager().getPlugin("Brawl");

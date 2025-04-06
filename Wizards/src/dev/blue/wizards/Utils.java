@@ -29,14 +29,18 @@ import dev.blue.wizards.spells.EnergySpell;
 import dev.blue.wizards.spells.FireballSpell;
 import dev.blue.wizards.spells.GustSpell;
 import dev.blue.wizards.spells.HealSpell;
+import dev.blue.wizards.spells.HideSpell;
 import dev.blue.wizards.spells.LeapSpell;
+import dev.blue.wizards.spells.LevitateSpell;
 import dev.blue.wizards.spells.LightningSpell;
 import dev.blue.wizards.spells.Spell;
 import dev.blue.wizards.wands.EnergyWand;
 import dev.blue.wizards.wands.FireballWand;
 import dev.blue.wizards.wands.GustWand;
 import dev.blue.wizards.wands.HealWand;
+import dev.blue.wizards.wands.HideWand;
 import dev.blue.wizards.wands.LeapWand;
+import dev.blue.wizards.wands.LevitateWand;
 import dev.blue.wizards.wands.LightningWand;
 
 public class Utils {
@@ -57,7 +61,7 @@ public class Utils {
 		key_leapcount = new NamespacedKey(main, "wizards-leapcount");
 	}
 	public void spawnBanner(Location loc) {
-		switch((byte)rand.nextInt(12)) {
+		switch((byte)rand.nextInt(13)) {
 		case SpellType.NULL:break;
 		case SpellType.ENERGY_BEAM:setBanner(loc); createEnergyBanner((Banner) loc.getBlock().getState()); break;
 		case SpellType.GUST:setBanner(loc); createGustBanner((Banner) loc.getBlock().getState()); break;
@@ -65,6 +69,8 @@ public class Utils {
 		case SpellType.FIREBALL:setBanner(loc); createFireballBanner((Banner) loc.getBlock().getState()); break;
 		case SpellType.HEAL:setBanner(loc); createHealBanner((Banner) loc.getBlock().getState()); break;
 		case SpellType.LEAP:setBanner(loc); createLeapBanner((Banner) loc.getBlock().getState()); break;
+		case SpellType.LEVITATE:setBanner(loc); createLevitateBanner((Banner) loc.getBlock().getState()); break;
+		case SpellType.HIDE:setBanner(loc); createHideBanner((Banner) loc.getBlock().getState()); break;
 		default:return;
 		}
 	}
@@ -85,7 +91,7 @@ public class Utils {
 	private void createEnergyBanner(Banner banner) {
 		List<Pattern> patterns = new ArrayList<Pattern>();
 		patterns.add(new Pattern(DyeColor.CYAN, PatternType.FLOWER));
-		patterns.add(new Pattern(DyeColor.WHITE, PatternType.CIRCLE_MIDDLE));
+		patterns.add(new Pattern(DyeColor.WHITE, PatternType.CIRCLE));
 		
 		banner.setPatterns(patterns);
 		banner.getPersistentDataContainer().set(key_spellType, PersistentDataType.BYTE, SpellType.ENERGY_BEAM);
@@ -95,7 +101,7 @@ public class Utils {
 	private void createGustBanner(Banner banner) {
 		List<Pattern> patterns = new ArrayList<Pattern>();
 		patterns.add(new Pattern(DyeColor.WHITE, PatternType.MOJANG));
-		patterns.add(new Pattern(DyeColor.WHITE, PatternType.CIRCLE_MIDDLE));
+		patterns.add(new Pattern(DyeColor.WHITE, PatternType.CIRCLE));
 		
 		banner.setPatterns(patterns);
 		banner.getPersistentDataContainer().set(key_spellType, PersistentDataType.BYTE, SpellType.GUST);
@@ -116,7 +122,7 @@ public class Utils {
 	private void createFireballBanner(Banner banner) {
 		List<Pattern> patterns = new ArrayList<Pattern>();
 		patterns.add(new Pattern(DyeColor.ORANGE, PatternType.FLOWER));
-		patterns.add(new Pattern(DyeColor.YELLOW, PatternType.CIRCLE_MIDDLE));
+		patterns.add(new Pattern(DyeColor.YELLOW, PatternType.CIRCLE));
 		
 		banner.setPatterns(patterns);
 		banner.getPersistentDataContainer().set(key_spellType, PersistentDataType.BYTE, SpellType.FIREBALL);
@@ -140,12 +146,28 @@ public class Utils {
 	
 	private void createLeapBanner(Banner banner) {
 		List<Pattern> patterns = new ArrayList<Pattern>();
-		patterns.add(new Pattern(DyeColor.MAGENTA, PatternType.RHOMBUS_MIDDLE));
+		patterns.add(new Pattern(DyeColor.MAGENTA, PatternType.RHOMBUS));
 		patterns.add(new Pattern(DyeColor.GRAY, PatternType.BORDER));
 		patterns.add(new Pattern(DyeColor.GRAY, PatternType.TRIANGLE_BOTTOM));
 		
 		banner.setPatterns(patterns);
 		banner.getPersistentDataContainer().set(key_spellType, PersistentDataType.BYTE, SpellType.LEAP);
+		banner.update();
+	}
+	
+	private void createLevitateBanner(Banner banner) {
+		List<Pattern> patterns = new ArrayList<Pattern>();
+		patterns.add(new Pattern(DyeColor.GRAY, PatternType.BORDER));
+		patterns.add(new Pattern(DyeColor.WHITE, PatternType.GRADIENT));
+		patterns.add(new Pattern(DyeColor.YELLOW, PatternType.TRIANGLE_BOTTOM));
+		
+		banner.setPatterns(patterns);
+		banner.getPersistentDataContainer().set(key_spellType, PersistentDataType.BYTE, SpellType.LEVITATE);
+		banner.update();
+	}
+	
+	private void createHideBanner(Banner banner) {
+		banner.getPersistentDataContainer().set(key_spellType, PersistentDataType.BYTE, SpellType.HIDE);
 		banner.update();
 	}
 	
@@ -157,6 +179,8 @@ public class Utils {
 		case SpellType.FIREBALL:return new FireballSpell(main, null);
 		case SpellType.HEAL:return new HealSpell(main, null);
 		case SpellType.LEAP:return new LeapSpell(main, null);
+		case SpellType.LEVITATE:return new LevitateSpell(main, null);
+		case SpellType.HIDE:return new HideSpell(main, null);
 		default:return null;
 		}
 	}
@@ -180,42 +204,56 @@ public class Utils {
 		Spell spell = getSpell(banner);
 		if (spell instanceof EnergySpell) {
 			if(new EnergySpell(main, p).getLevel() < 10) {
-				applySpell(p, new EnergySpell(main, p), new EnergyWand(main).getItemStack());
+				applySpell(p, new EnergySpell(main, p), new EnergyWand(main));
 				destroyBanner(banner.getBlock());
 				return;
 			}
 		}
 		if(spell instanceof GustSpell) {
 			if(new GustSpell(main, p).getLevel() < 10) {
-				applySpell(p, new GustSpell(main, p), new GustWand(main).getItemStack());
+				applySpell(p, new GustSpell(main, p), new GustWand(main));
 				destroyBanner(banner.getBlock());
 				return;
 			}
 		}
 		if(spell instanceof LightningSpell) {
 			if(new LightningSpell(main, p).getLevel() < 10) {
-				applySpell(p, new LightningSpell(main, p), new LightningWand(main).getItemStack());
+				applySpell(p, new LightningSpell(main, p), new LightningWand(main));
 				destroyBanner(banner.getBlock());
 				return;
 			}
 		}
 		if(spell instanceof FireballSpell) {
 			if(new FireballSpell(main, p).getLevel() < 10) {
-				applySpell(p, new FireballSpell(main, p), new FireballWand(main).getItemStack());
+				applySpell(p, new FireballSpell(main, p), new FireballWand(main));
 				destroyBanner(banner.getBlock());
 				return;
 			}
 		}
 		if(spell instanceof HealSpell) {
 			if(new HealSpell(main, p).getLevel() < 10) {
-				applySpell(p, new HealSpell(main, p), new HealWand(main).getItemStack());
+				applySpell(p, new HealSpell(main, p), new HealWand(main));
 				destroyBanner(banner.getBlock());
 				return;
 			}
 		}
 		if(spell instanceof LeapSpell) {
 			if(new LeapSpell(main, p).getLevel() < 10) {
-				applySpell(p, new LeapSpell(main, p), new LeapWand(main).getItemStack());
+				applySpell(p, new LeapSpell(main, p), new LeapWand(main));
+				destroyBanner(banner.getBlock());
+				return;
+			}
+		}
+		if(spell instanceof LevitateSpell) {
+			if(new LevitateSpell(main, p).getLevel() < 10) {
+				applySpell(p, new LevitateSpell(main, p), new LevitateWand(main));
+				destroyBanner(banner.getBlock());
+				return;
+			}
+		}
+		if(spell instanceof HideSpell) {
+			if(new HideSpell(main, p).getLevel() < 10) {
+				applySpell(p, new HideSpell(main, p), new HideWand(main));
 				destroyBanner(banner.getBlock());
 				return;
 			}
@@ -236,7 +274,7 @@ public class Utils {
 	public void destroyBanner(Block block) {
 		block.setType(Material.AIR);
 		block.getWorld().playSound(block.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1, 1);
-		block.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, block.getX()+0.5, block.getY()+0.5, block.getZ()+0.5,
+		block.getWorld().spawnParticle(Particle.SMOKE, block.getX()+0.5, block.getY()+0.5, block.getZ()+0.5,
 			20, 0.2, 1, 0.2, 0, null);
 	}
 	
@@ -260,6 +298,8 @@ public class Utils {
 		new FireballSpell(main, p).resetLevel();
 		new HealSpell(main, p).resetLevel();
 		new LeapSpell(main, p).resetLevel();
+		new LevitateSpell(main, p).resetLevel();
+		new HideSpell(main, p).resetLevel();
 	}
 	
 	public void resetCombatTimer(Player p) {
@@ -302,5 +342,28 @@ public class Utils {
 	
 	public void resetLeaps(Player p) {
 		p.getPersistentDataContainer().set(key_leapcount, PersistentDataType.INTEGER, 2);
+	}
+	
+	public static boolean isNumeric(String s) {
+		char[] suspects = s.toCharArray();
+		for (int i = 0; i < suspects.length; i++) {
+			switch (suspects[i]) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case '.':
+				break;
+			default:
+				return false;
+			}
+		}
+		return true;
 	}
 }

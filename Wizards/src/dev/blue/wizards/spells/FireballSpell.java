@@ -8,7 +8,8 @@ import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -18,16 +19,22 @@ import dev.blue.wizards.Main;
 public class FireballSpell extends Spell {
 
 	public FireballSpell(Main main, Player p) {
-		super(main, p, new NamespacedKey(main, "wizards-fireballSpell"));
+		super(main, p, new NamespacedKey(main, "wizards-fireballSpell"), 12);
 	}
 
 	@Override
 	public void cast() {
-		if(p.getFoodLevel() < 12) {
+		for(PotionEffect each:p.getActivePotionEffects()) {
+			if(each.getType() == PotionEffectType.INVISIBILITY) {
+				p.removePotionEffect(PotionEffectType.INVISIBILITY);
+				p.removePotionEffect(PotionEffectType.NIGHT_VISION);
+			}
+		}
+		if(p.getFoodLevel() < cost) {
 			p.playSound(p.getLocation(), Sound.BLOCK_DISPENSER_FAIL, 1, 1);
 			return;
 		}
-		p.setFoodLevel(p.getFoodLevel()-12);
+		p.setFoodLevel(p.getFoodLevel()-cost);
 		if(main.getGame().gameIsRunning()) {
 			Vector direction = p.getLocation().getDirection();
 			Fireball fireball = p.launchProjectile(Fireball.class, direction.normalize());
@@ -48,7 +55,7 @@ public class FireballSpell extends Spell {
 		aec.setRadiusPerTick(-0.1f);
 		aec.setReapplicationDelay(10);
 		aec.setSource(fireball.getShooter());
-		aec.setBasePotionData(new PotionData(PotionType.INSTANT_DAMAGE, false, false));
+		aec.setBasePotionType(PotionType.HARMING);
 		new BukkitRunnable() {
 			@Override
 			public void run() {

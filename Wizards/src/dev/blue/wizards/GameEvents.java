@@ -23,6 +23,7 @@ public class GameEvents {
 	}
 	
 	public void runGameEvents() {
+		//Bukkit.broadcastMessage("§7debug - running events");
 		BukkitRunnable runnable = new BukkitRunnable() {
 			int timer = 0;
 			@Override
@@ -35,7 +36,7 @@ public class GameEvents {
 					}
 					timer++;
 					if(main.getGame().getActivePlayers().size() > 1) {
-						double d = 90/(main.getGame().getActivePlayers().size()/2);
+						double d = 90/(main.getGame().getActivePlayers().size());
 						bannerInterval = (int) Math.floor(d);
 					}
 					if(timer == 2) {
@@ -52,7 +53,7 @@ public class GameEvents {
 							each.playSound(each.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, 0.2f, 1f);
 							each.sendTitle("", "§dSpell banners have respawned!", 2, 20, 12);
 						}
-						bannerInterval += 20;
+						bannerInterval += 1;
 						spawnAllBanners();
 					}
 				}else {
@@ -66,6 +67,7 @@ public class GameEvents {
 	}
 	
 	public void cleanup() {
+		//Bukkit.broadcastMessage("§7debug - cleanup");
 		if(gameNeedsCleanup) {
 			for(Player each:Bukkit.getOnlinePlayers()) {
 				main.getUtils().setupInventory(each);
@@ -91,3 +93,7 @@ public class GameEvents {
 		}
 	}
 }
+
+
+
+

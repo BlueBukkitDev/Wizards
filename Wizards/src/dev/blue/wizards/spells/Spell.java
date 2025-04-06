@@ -10,10 +10,12 @@ public abstract class Spell {
 	protected static Main main;//Shouldn't ever cause a problem, because by the time a key is referenced, the class will have been properly initialized. 
 	protected Player p;
 	protected NamespacedKey key;
-	public Spell(Main mainclass, Player p, NamespacedKey namespacedKey) {
+	protected int cost;
+	public Spell(Main mainclass, Player p, NamespacedKey namespacedKey, int cost) {
 		main = mainclass;
 		this.p = p;
 		key = namespacedKey;
+		this.cost = cost;
 	}
 	public abstract void cast();
 	public NamespacedKey getKey() {
@@ -30,5 +32,9 @@ public abstract class Spell {
 		if(p.getPersistentDataContainer().get(key, PersistentDataType.INTEGER) == null) {
 			p.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, 0);
 		}
+	}
+	@Override
+	public String toString() {
+		return key.getNamespace()+":"+key.getKey();
 	}
 }

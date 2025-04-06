@@ -3,28 +3,21 @@ package dev.blue.wizards.wands;
 import java.util.Arrays;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import dev.blue.wizards.Main;
 
-public class LightningWand extends ItemStack {
-	private Main main;
+public class LightningWand extends Wand {
+
 	public LightningWand(Main main) {
-		this.main = main;
+		super(main, Material.TORCH, "wizards-lightningSpell");
 	}
-	public NamespacedKey getSpellKey() {
-		return new NamespacedKey(main, "wizards-lightningSpell");
-	}
-	public ItemStack getItemStack() {
-		ItemStack stack = new ItemStack(Material.TORCH);
-		ItemMeta meta = stack.getItemMeta();
+	
+	@Override
+	public ItemMeta buildMeta() {
+		ItemMeta meta = getItemMeta();
 		meta.setDisplayName("§6Lightning Wand");
-		meta.getPersistentDataContainer().set(new NamespacedKey(main, "wizards-wand"), PersistentDataType.BYTE, (byte)1);
-		meta.setLore(Arrays.asList(new String[] {"§7Right-Click to cast a spell"}));
-		stack.setItemMeta(meta);
-		return stack;
+		meta.setLore(Arrays.asList(new String[] {"§7Left-Click to cast a spell"}));
+		return meta;
 	}
 }

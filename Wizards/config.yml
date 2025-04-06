@@ -1,35 +1,36 @@
+GameMode: SURVIVAL
 Messages:
   SelfElectrocute:
-  - &d$name$ is conducting themselves well
-  - &d$name$ made a shocking discovery
-  - &d$name$ decided to start lightening up
+  - &d_name_ is conducting themselves well
+  - &d_name_ made a shocking discovery
+  - &d_name_ decided to start lightening up
   SelfBurn:
-  - &d$name$'s looking mighty crispy
-  - &d$name$'s death warrants a study in Spontaneous Human Combustion
-  - &d$name$ is all fired up and ready to go!
+  - &d_name_'s looking mighty crispy
+  - &d_name_'s death warrants a study in Spontaneous Human Combustion
+  - &dLet _name_ cook!
   Suicide:
-  - &d$name$ couldn't take it anymore
-  - &d$name$ was their own worst enemy
-  - &d$name$ found no reason to continue
+  - &d_name_ couldn't take it anymore
+  - &d_name_ was their own worst enemy
+  - &d_name_ found no reason to continue
   Unknown:
-  - '&dUnusual circumstances befell $name$'
-  - '&d...yeah, $name$ does that sometimes'
-  - '&dLooks like $name$ learned a new trick'
+  - &dUnusual circumstances befell _name_
+  - "&d...Yeah, _name_ does that sometimes..."
+  - &dLooks like _name_ learned a new trick
   KilledByLightning:
-  - &d$name$ was struck down by $killer$
+  - &d_name_ was struck down by _killer_
   KilledByFire:
-  - &d$killer$ likes $name$ done medium-well
+  - &d_killer_ likes _name_ done medium-well
   KilledByEnergy:
-  - &d$killer$ wouldn't quit poking $name$
+  - &d_killer_ wouldn't quit poking _name_
   KilledByGust:
-  - &d$name$ was cast into the abyss by $killer$
+  - &d_name_ was cast into the abyss by _killer_
   KilledByVoid:
     AfterLightning:
-    - &d$name$ thought the void was safer than $killer$'s lightning
+    - &d_name_ thought the void was safer than _killer_'s lightning
     AfterFire:
-    - &d$name$ used the void to extinguish $killer$'s fire
+    - &d_name_ used the void to extinguish _killer_'s fire
     AfterEnergy:
-    - &d$name$ had just about enough of $killer$
+    - &d_name_ had just about enough of _killer_
     AfterGust:
-    - &d$name$ couldn't get past $killer$'s gustiness
-SpellSpawns:
+    - &d_name_ couldn't get past _killer_'s gustiness
+SpellSpawns: []
