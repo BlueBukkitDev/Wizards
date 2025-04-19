@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.block.banner.Pattern;
@@ -324,6 +325,8 @@ public class Utils {
 					p.removePotionEffect(each.getType());
 				}
 				p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, -1, 1, false, false, false));
+				p.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, -1, 4, false, false, false));
+				p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 			}
 		};
 		clearPots.runTaskLater(main, 1);
@@ -366,4 +369,42 @@ public class Utils {
 		}
 		return true;
 	}
+	
+	public void selectRandomMap() {
+		Random rand = new Random();
+		int mapIndex = rand.nextInt(main.getMaps().getKeys(false).size());
+		List<String> maps = new ArrayList<String>(main.getMaps().getKeys(false));
+		maps.sort(null);
+		main.setCurrentMap(maps.get(mapIndex));
+		Bukkit.getConsoleSender().sendMessage("§6[Wizards]§r Loading map "+friendlify(main.getCurrentMap()));
+	}
+	
+	/**
+	 *Will return an error if the map is not yet selected. Not ideal but will do for now. 
+	 **/
+	public Location getCurrentLobby() {
+		return main.getMaps().getLocation(main.getCurrentMap()+".Lobby");
+	}
+	
+	public Location getRandomMapSpawn() {
+		Random rand = new Random();
+		@SuppressWarnings("unchecked")
+		List<Location> spawns = new ArrayList<Location>((List<Location>) main.getMaps().getList(main.getCurrentMap()+".PlayerSpawns"));
+		int spawnIndex = rand.nextInt(spawns.size());
+		return(spawns.get(spawnIndex));
+	}
+	
+	/**
+	 *Replaces underscores with spaces, capitalizes all words > 3 letters, first words, and select others
+	 **/
+	public String friendlify(String unfriendly) {
+		unfriendly = unfriendly.replaceAll("_", " ");
+		String friendly = "";
+		for(String each:unfriendly.split(" ")) {
+			each = each.substring(0, 1).toUpperCase() + each.substring(1);
+			friendly += " "+each;
+		}
+		return friendly.strip();
+	}
 }
+

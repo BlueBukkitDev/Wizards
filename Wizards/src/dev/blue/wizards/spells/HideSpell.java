@@ -21,7 +21,7 @@ public class HideSpell extends Spell {
 		}
 		p.setFoodLevel(p.getFoodLevel()-cost);
 		if(main.getGame().gameIsRunning()) {
-			p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20+(getLevel()*10), 1, false, false, false));
+			p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20+(getLevel()*10), 1, false, false, true));
 			p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20+(getLevel()*10), 1, false, false, false));
 			p.getWorld().spawnParticle(Particle.SMOKE, p.getEyeLocation().getX(), p.getEyeLocation().getY()-0.2, p.getLocation().getZ(), 350, 0.5, 0.5, 0.5, 0, null);
 		}

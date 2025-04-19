@@ -15,7 +15,7 @@ public class GameEvents {
 	 *Always true if a game event cycle has happened since the last cleanup
 	 **/
 	private static boolean gameNeedsCleanup = true;
-	private int bannerInterval = 80;
+	private int bannerInterval = 140;//seconds
 	Random rand;
 	public GameEvents(Main main) {
 		this.main = main;
@@ -32,11 +32,11 @@ public class GameEvents {
 					if(!gameNeedsCleanup) {
 						gameNeedsCleanup = true;
 						timer = 0;
-						bannerInterval = 80;
+						bannerInterval = 140;
 					}
 					timer++;
 					if(main.getGame().getActivePlayers().size() > 1) {
-						double d = 90/(main.getGame().getActivePlayers().size());
+						double d = 140-(main.getGame().getActivePlayers().size()*10);//120 seconds for 2 players, 60 seconds for 8
 						bannerInterval = (int) Math.floor(d);
 					}
 					if(timer == 2) {
@@ -73,10 +73,10 @@ public class GameEvents {
 				main.getUtils().setupInventory(each);
 				main.getUtils().resetAllSpells(each);
 				main.getUtils().resetPots(each);
-				each.setHealth(20);
+				each.teleport(main.getUtils().getCurrentLobby());
 			}
 			@SuppressWarnings("unchecked")
-			List<Location> spellSpawns = (List<Location>) main.getConfig().getList("SpellSpawns");
+			List<Location> spellSpawns = (List<Location>) main.getMaps().getList(main.getCurrentMap()+".SpellSpawns");
 			for(Location each:spellSpawns) {
 				main.getUtils().destroyBanner(each.getBlock());
 			}
@@ -86,7 +86,16 @@ public class GameEvents {
 	
 	@SuppressWarnings("unchecked")
 	private void spawnAllBanners() {
-		for(Location each:(List<Location>)main.getConfig().getList("SpellSpawns")) {
+		for(Location each:(List<Location>)main.getMaps().getList(main.getCurrentMap()+".SpellSpawns")) {
+			if(rand.nextInt(100) < 70) {//70% chance of spawning one at each location. 
+				main.getUtils().spawnBanner(each);
+			}
+		}
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	private void spawnDrop() {
+		for(Location each:(List<Location>)main.getMaps().getList(main.getCurrentMap()+".DropSpawns")) {
 			if(rand.nextInt(100) < 70) {//70% chance of spawning one at each location. 
 				main.getUtils().spawnBanner(each);
 			}

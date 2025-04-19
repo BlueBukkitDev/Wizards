@@ -11,13 +11,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import dev.blue.brawl.events.GameDamageEvent;
+import dev.blue.brawl.events.GameTerminateEvent;
 import dev.blue.brawl.events.PlayerCombatEvent;
 import dev.blue.brawl.events.PlayerEliminateEvent;
 import dev.blue.wizards.Main;
 import dev.blue.wizards.spells.GustSpell;
 import dev.blue.wizards.spells.LevitateSpell;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class GameListener implements Listener {
 	
@@ -29,6 +36,7 @@ public class GameListener implements Listener {
 	
 	@EventHandler
 	public void onEliminate(PlayerEliminateEvent e) {
+		e.setRespawnLocation(main.getUtils().getRandomMapSpawn());
 		String cause = e.getReason().split("%")[0];
 		boolean voidDmg = e.getReason().split("%").length > 1;
 		if(e.getKiller() != null) {
@@ -63,6 +71,7 @@ public class GameListener implements Listener {
 		BukkitRunnable setPots = new BukkitRunnable() {
 			@Override
 			public void run() {
+				main.getUtils().resetCombatTimer(e.getPlayer());
 				main.getUtils().resetPots(e.getPlayer());
 			}
 		};
@@ -72,6 +81,35 @@ public class GameListener implements Listener {
 				each.playSound(each, Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 0.4f, 3f);
 			}
 		}
+	}
+	
+	@EventHandler
+	public void onGenericDamage(EntityDamageEvent e) {
+		if(e.getCause() != DamageCause.FIRE_TICK) {
+			return;
+		}
+		if(!(e.getEntity() instanceof Player)) {
+			return;
+		}
+		Player p = (Player) e.getEntity();
+		String[] colors = {"§4", "§c", "§6"};
+		int index = (int) Math.ceil(p.getFireTicks()/20/5);//5 second intervals, being yellow, then red, then dark red. 
+		if(index > colors.length-1) {
+			index = colors.length-1;
+		}
+		String heat = colors[index];
+		p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(heat+"ঔঌ "+p.getFireTicks()/20+" ঌঔ"));
+	}
+	
+	@EventHandler
+	public void onGameDamage(GameDamageEvent e) {
+		e.setSpawnLocation(main.getUtils().getRandomMapSpawn());
+	}
+	
+	@EventHandler
+	public void onGameEnd(GameTerminateEvent e) {
+		main.getUtils().selectRandomMap();
+		e.setSpawnLocation(main.getUtils().getCurrentLobby());
 	}
 	
 	@EventHandler
@@ -103,6 +141,14 @@ public class GameListener implements Listener {
 		}
 		e.setAttacker(null);
 		return;
+	}
+	
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e) {
+		e.getPlayer().getInventory().clear();
+		main.getUtils().resetAllSpells(e.getPlayer());
+		main.getUtils().resetCombatTimer(e.getPlayer());
+		main.getUtils().resetPots(e.getPlayer());
 	}
 	
 	//@EventHandler
